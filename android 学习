@@ -1,0 +1,302 @@
+Android学习笔记
+
+Intent启动活动有两种方式
+1：显式加载    Intent intent = new Intent(MainActivity.this, SecondActivity.class);
+2: 隐式加载    Intent intent = new Intent(action);//action是在清单文件中定义的一个活动中的东西，这个定义说明活动可以相应这个action类型的事件
+还可以intent.addCategory(category);来进一步来确定启动此intent的活动
+<intent-filter>
+	<action android:name="自己定义的action或者是体统的action"/>
+	<category android:name="同上，可以是默认的"/>
+</intent-filter>
+
+Intent intent = new Intent();
+Intent启动另一个Activity，并可以使用intent.putExtra(键， 值);  然后startActivity(intent); (startActivity()属于Activity类)
+
+
+Bundle用来存储数据，以便恢复现场
+如果没有出栈但是活动被系统回收了，当重新返回就到这个活动时就会调用onCreat这个活动，并且会传入一个Bundle作为onCreate的参数，以便恢复数据
+方法Activity 的回调方法 onSaveInstanceState(Bundle outState);会在这个活动被回收时回调，所以可以把数据保存在outState中，在下次启动onCreat(Bundle savedInstanceState);方法时，数据outState会被传入sacedInstanceState中
+然后就可以在onCreat中恢复数据;这样就不会影响用户体验效果
+（outState.putString(键, 值);）
+
+Bundle和Intent存取数据类似，两者可以协作，传递数据，先把数据存到Bundle中，然后再把Bundle放到Intent中，取出数据时，先从Intent取出Bundle，再Bundle.get***(键);
+
+
+当活动出栈时，会调用onDestroy方法（切记是出栈，而不是被压入栈下面）
+
+
+活动的启动模式:
+//在清单文件的活动声明中，android:launchMode="模式";
+1:standard
+系统默认启动：每次启动一个活动，系统不管此活动是否已经存在栈中，系统会新生成一个活动并把它放到栈顶，每次活动都会启动该活动的有一个新的实例子
+2:singleTop
+在有些情况下，standard看起来不是那么合理，如果有一个活动已经在栈顶了，那么没有必要再新生成一个和栈顶一样的活动，singleTop就是这样的，如果栈顶已经有这个活动，就不会再次创建这个活动
+但是如果活动不在栈顶，此时就会创建此活动
+3：singleTask
+singleTask只允许活动栈中不能存在相同的活动，如果启动了一个活动，系统就会先在栈中找是否有这个活动的存在，如果存在，就会把此活动之上的栈全部弹出，（也就是销毁）把此活动置为栈顶活动
+4：singleInstance
+这个模式是当不同的应用程序想公用一个活动时，会用到此模式，以上三个模式不适用这种情况，因为，每个应用程序都会有自己的返回栈，所以每个应用程序调用此活动都是在自己的栈中新建一个这个活动，这样并不是共享，
+singleInstance模式的活动，会有一个专门的返回栈去管理它，这个单独的返回栈被应用程序所共享（可以通过getTaskId();来证实这个情况）
+
+
+
+
+
+/**android UI
+
+
+
+1:基本的属性，
+android:id="@+id/button"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+
+还可以有visible
+
+2：设置控件中的文字位置
+android:gravity="center"
+
+2:文字大小用sp
+
+4:文字颜色textColor
+
+5:EditText中的hint提示文字，还有最大行android:maxLines="2"
+
+6:ImageView布局文件中的文件资源android:src="@drawable/ic_luncher"
+	java代码中改ImageView iv;
+	iv.setImageResource(R.drawable.ic_luncher);
+
+7:ProgressBar 可以改风格style
+可以获取进度，设置进度
+setProgress();
+getProgress();
+android:max="100"进度的最大值
+
+
+
+8.AlertDialog  用来提醒一些重要的信息，或者警告信息
+首先先生成一个dialog
+AlertDialog.Builder dialog = new Alert.Builder("MainActivity.this");
+然后可以设置一些属性 比如标题，内容，按键等
+
+标题：dialog.setTitle("This is a AlertDialog");
+内容：dialog.setMessage("Something important");
+按键：1：dialog.setPositiveButton("OK", new DialogInterface.OnclickListener(DialogInterface dialog, int which){
+
+});
+      2:dialog.setNegativeButton("Cancel",new DialogInterface.OnclickListener(DialogInterface dialog, int which){
+
+});
+
+最后dialog.show();就可以把dialog显示出来
+
+dialog.setCancelable(true或false);//是否可以通过back键取消掉此dialog
+
+9.ProgressDialog 用来告诉用户要等待一会
+和AlertDialog差不多
+ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+标题...
+内容...
+是否可以取消...
+progressDialog.show();
+
+
+progressDialog.dismiss();//用来取消此dialog，因为ProgressDialog没有按键，所以当数据加载完后要调用此方法取消progressDialog
+
+
+
+布局：
+1：线性布局
+方向分为orientation= vertical 和 horizontal
+vertical的线性布局在垂直方向进行排列，layout_gravity属性只能是在水平方向的属性
+同理horizontal的线性布局是在水平方向进行排列，。。。。只能是在垂直方向的属性，比如top,bottom,center_vertical等
+注：layout_gravity是指定此空间在父容器中的位置    而 gravity指定了空间内部的排列方式例，一个按钮中的文字的位置，或者是线性布局中的空间位置
+
+
+layout_weight="比重"很好的解决了屏幕适应问题，指定了该空间在容器中的比重，如果是orientation =  horizontal那就是在水平方向的比重，如果是vertical那就是在垂直方向上的比重
+
+可以使用margin_left   margin_top等定义位置
+
+2：相对布局
+布局很任意，可以相对与父容器，android:layout_alignParentRight="true"
+			      android:layout_alignParentTop="true"
+			      android:layout_centerInParent"true"
+也可以相对于控件，android:layout_above="@id/button3"
+		  android:layout_below="@id/button3"
+		  android:layout_toRightOf="@id/button3"
+		  android:layout_toLeftOf="@id/button4"
+注意：在引用控件时，被引用控件一定在引用控件之前定义，否则会找不到
+
+3：FrameLayout
+布局简单，应用场景也少，所有控件都摆放在布局的左上角。。。。碎片会用到
+
+4：TableLayout
+表格布局
+每一层都有一个<TableRow>    </TableRow>
+里面的控件不能指定宽度
+可以通过在TableLayout属性中设置stretchColumns="1"来指定如果未占满屏幕，拉伸第几个控件来拉伸屏幕
+如果在控件属性中设置layout_span来指定该空间占几个控件位置
+每一层控件的位置是对齐的
+
+
+
+
+控件都是直接或者间接继承View类的，ViewGroup继承View,所有布局文件都是直接或者间接继承ViewGroup的
+
+布局可以通过<include layout="@layout/title"/>来调用其他布局文件
+LayoutInflater.from(context).inflate(R.layout.title, this);可以动态加载布局文件
+
+
+使输入框填满屏幕宽度
+在 activity_main.xml 中，修改 <EditText> ，使这些属性如下所示：
+
+<EditText android:id="@+id/edit_message"
+    android:layout_weight="1"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:hint="@string/edit_message" />
+将宽度设置为零 (0dp) 可提高布局性能，这是因为如果将宽度设置为 "wrap_content"，则会要求系统计算宽度，而该计算最终毫无意义，因为 weight 值还需要计算另一个宽度，才能填满剩余空间。
+
+现在，您将修改第二个 Activity，以显示第一个 Activity 传递的消息。
+
+在 DisplayMessageActivity.java 中，向 onCreate() 方法添加下列代码：
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+   super.onCreate(savedInstanceState);
+   setContentView(R.layout.activity_display_message);
+
+   Intent intent = getIntent();
+   String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+   TextView textView = new TextView(this);
+   textView.setTextSize(40);
+   textView.setText(message);
+
+   ViewGroup layout = (ViewGroup) findViewById(R.id.activity_display_message);
+   layout.addView(textView);
+}
+
+
+适应不同的语言：
+把文字资源放到String.xml中，方便管理，和适应不同的语言
+
+适应不同的屏幕：
+1:布局文件可以放到不同的布局文中，安卓系统自动选择合适的布局
+2:不同分辨率的文件放到不同的drawable－类型 中，以便支持不同的分辨率的 手机，安卓系统自动选择合适的图片
+
+
+
+
+
+创建不同的位图
+您应该始终提供适当缩放到每个通用密度桶的位图资源：低，中，高和超高密度。这有助于在所有屏幕密度上实现良好的图形质量和性能。
+
+要生成这些图像，您应该从矢量格式的原始资源开始，并使用以下尺寸比例为每个密度生成图像：
+
+xhdpi：2.0
+hdpi：1.5
+mdpi：1.0（基线）
+ldpi：0.75
+这意味着，如果为xhdpi设备生成200x200图像，则应为150x150（hdpi），100x100（mdpi）和75x75（ldpi设备）生成相同的资源。
+
+然后，将文件放在相应的drawable资源目录中：
+
+我的项目/
+    res /
+        drawable-xhdpi /
+            awesomeimage.png
+        drawable-hdpi /
+            awesomeimage.png
+        drawable-mdpi /
+            awesomeimage.png
+        drawable-ldpi /
+            awesomeimage.png
+任何时候你引用@ drawable / awesomeimage，系统根据屏幕的密度选择适当的位图。
+
+注意：低密度（ldpi）资源不总是必需的。当您提供hdpi资产时，系统会将其缩小一半，以正确适合ldpi屏幕。
+
+
+
+
+使用   if（Build.VERSION.SDK_INT> = Build.VERSION_CODES.HONEYCOMB） 可以写出用来适应不同的android版本的代码
+
+根据平台版本选择主题
+新版本的 Android 可为应用提供更多主题，您可能希望在这些平台上运行时可以使用这些新增主题，同时仍可兼容旧版本。 您可以通过自定义主题来实现这一目的，该主题根据平台版本利用资源选择在不同父主题之间切换。
+
+例如，以下这个声明所对应的自定义主题就是标准的平台默认明亮主题。 它位于 res/values 之下的一个 XML 文件（通常是 res/values/styles.xml）中：
+
+<style name="LightThemeSelector" parent="android:Theme.Light">
+    ...
+</style>
+为了让该主题在应用运行在 Android 3.0（API 级别 11）或更高版本系统上时使用更新的全息主题，您可以在 res/values-v11 下的 XML 文件中加入一个替代主题声明，但将父主题设置为全息主题：
+
+<style name="LightThemeSelector" parent="android:Theme.Holo.Light">
+    ...
+</style>
+现在像您使用任何其他主题那样使用该主题，您的应用将在其运行于 Android 3.0 或更高版本的系统上时自动切换到全息主题。
+
+R.styleable.Theme 提供了可在主题中使用的标准属性的列表。
+
+如需了解有关根据平台版本或其他设备配置提供备用资源（例如主题和布局）的详细信息，请参阅提供资源文档。
+
+
+
+与 Activity 通信
+尽管 Fragment 是作为独立于 Activity 的对象实现，并且可在多个 Activity 内使用，但片段的给定实例会直接绑定到包含它的 Activity。
+
+具体地说，片段可以通过 getActivity() 访问 Activity 实例，并轻松地执行在 Activity 布局中查找视图等任务。
+
+View listView = getActivity().findViewById(R.id.list);
+同样地，您的 Activity 也可以使用 findFragmentById() 或 findFragmentByTag()，通过从 FragmentManager 获取对 Fragment 的引用来调用片段中的方法。例如：
+
+ExampleFragment fragment = (ExampleFragment) getFragmentManager().findFragmentById(R.id.example_fragment);
+创建对 Activity 的事件回调
+在某些情况下，您可能需要通过片段与 Activity 共享事件。执行此操作的一个好方法是，在片段内定义一个回调接口，并要求宿主 Activity 实现它。 当 Activity 通过该接口收到回调时，可以根据需要与布局中的其他片段共享这些信息。
+
+例如，如果一个新闻应用的 Activity 有两个片段 — 一个用于显示文章列表（片段 A），另一个用于显示文章（片段 B）— 那么片段 A 必须在列表项被选定后告知 Activity，以便它告知片段 B 显示该文章。 在本例中，OnArticleSelectedListener 接口在片段 A 内声明：
+
+public static class FragmentA extends ListFragment {
+    ...
+    // Container Activity must implement this interface
+    public interface OnArticleSelectedListener {
+        public void onArticleSelected(Uri articleUri);
+    }
+    ...
+}
+然后，该片段的宿主 Activity 会实现 OnArticleSelectedListener 接口并替代 onArticleSelected()，将来自片段 A 的事件通知片段 B。为确保宿主 Activity 实现此接口，片段 A 的 onAttach() 回调方法（系统在向 Activity 添加片段时调用的方法）会通过转换传递到 onAttach() 中的 Activity 来实例化 OnArticleSelectedListener 的实例：
+
+public static class FragmentA extends ListFragment {
+    OnArticleSelectedListener mListener;
+    ...
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnArticleSelectedListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnArticleSelectedListener");
+        }
+    }
+    ...
+}
+如果 Activity 未实现接口，则片段会引发 ClassCastException。实现时，mListener 成员会保留对 Activity 的 OnArticleSelectedListener 实现的引用，以便片段 A 可以通过调用 OnArticleSelectedListener 接口定义的方法与 Activity 共享事件。例如，如果片段 A 是 ListFragment 的一个扩展，则用户每次点击列表项时，系统都会调用片段中的 onListItemClick()，然后该方法会调用 onArticleSelected() 以与 Activity 共享事件：
+
+public static class FragmentA extends ListFragment {
+    OnArticleSelectedListener mListener;
+    ...
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        // Append the clicked item's row ID with the content provider Uri
+        Uri noteUri = ContentUris.withAppendedId(ArticleColumns.CONTENT_URI, id);
+        // Send the event and Uri to the host activity
+        mListener.onArticleSelected(noteUri);
+    }
+    ...
+}
+传递到 onListItemClick() 的 id 参数是被点击项的行 ID，即 Activity（或其他片段）用来从应用的 ContentProvider 获取文章的 ID。
+
+内容提供程序文档中提供了有关内容提供程序用法的更多详情。
+
+
+
+fragment的生命周期是，其父活动setContentView（R.layout.main）,之后，其调用onAttach方法，onCreate（）， onCreateView（），之后另一个fragment调用同样的方法，然后父活动调用onCreate（），之后fragment调用onActivityCreate（），onStart，之后父活动onStart，然后父活动onResume，fragment   onResume（），如果替换了一个fragment，调用onAttach，onCreate， onPause， onStop， onDestroyView（），onCreateView
+onActivityCreate，onStart， onResume
